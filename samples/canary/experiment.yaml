@@ -37,7 +37,7 @@ spec:
             NAMESPACE={{ .namespace }}
 
             # Define constants
-            TEMPLATE="https://raw.githubusercontent.com/kalantar/i8-istio/samples/canary/vs-final.yaml"
+            TEMPLATE="https://raw.githubusercontent.com/kalantar/i8-istio/main/samples/canary/vs-final.yaml"
             
             # echo inputs
             echo "       APPLICATION = ${APPLICATION}"

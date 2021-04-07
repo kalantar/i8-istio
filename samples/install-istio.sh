@@ -28,9 +28,7 @@ curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
 cd istio-${ISTIO_VERSION}
 export PATH=$PWD/bin:$PATH
 cd $WORK_DIR
-## TODO use this
-## curl -L https://raw.githubusercontent.com/iter8-tools/iter8/${TAG}/samples/istio/quickstart/istio-minimal-operator.yaml | istioctl install -y -f -
-istioctl install -y -f ${ITER8}/samples/knative/quickstart/istio-minimal-operator.yaml
+istioctl install -y -f ${ITER8_ISTIO}/samples/istio-minimal-operator.yaml
 echo "Istio installed successfully"
 
 # Step 3: Verify Iter8 installation

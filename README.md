@@ -8,7 +8,7 @@
 
     For example, on `minikube`:
 
-        minikube start --cpus 6 --memory 12288
+    minikube start --cpus 6 --memory 12288
 
     git clone https://github.com/kalantar/i8-istio.git
     cd i8-istio
@@ -47,15 +47,17 @@
 
 #### 1. Set up `bookinfo` application
 
-    $ITER8_ISTIO/samples/bookinfo-setup.sh
+    $ITER8_ISTIO/samples/canary/bookinfo-setup.sh
 
 #### 2. Apply load using fortio
 
-    kubectl apply -f $ITER8_ISTIO/samples/fortio.yaml
+    URL_VALUE="http://$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.clusterIP}'):80/productpage"
+    sed "s+URL_VALUE+${URL_VALUE}+g" $ITER8/samples/istio/quickstart/fortio.yaml | kubectl apply -f -
+
 
 #### 3. Create experiment
 
-    kubectl apply -f $ITER8_ISTIO/samples/experiment.yaml
+    kubectl apply -f $ITER8_ISTIO/samples/canary/experiment.yaml
 
 #### 4. Observe experiment
 
@@ -72,10 +74,9 @@ Using kubectl:
 
 Watching traffic distribution:
 
-    kubectl -n bookinfo-iter8 get vs reviews -o json | jq .spec.http[0]
+    kubectl -n bookinfo-iter8 get vs reviews -o json --watch | jq .spec.http[0].route
 
 #### 5. Cleanup
 
-    kubectl delete -f $ITER8_ISTIO/samples/fortio.yaml
-kubectl delete -f
-    $ITER8_ISTIO/experiment.yaml
+    kubectl delete -f $ITER8_ISTIO/samples/canary/fortio.yaml
+    kubectl delete -f $ITER8_ISTIO/samples/canary/experiment.yaml
