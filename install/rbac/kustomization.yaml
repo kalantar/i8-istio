@@ -1,0 +1,5 @@
+namespace: iter8-system
+
+resources:
+- rolebindings.yaml
+- roles.yaml

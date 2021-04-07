@@ -1,0 +1,41 @@
+########## 
+# Kubernetes stacks are specified in three places: 
+#
+# 1. the resources array field in core/rbac/stacks/kustomization.yaml,
+# 2. the resources array field in metrics/kustomization.yaml file (this file), and
+# 3. the resources array field in prometheus-add-on/service-monitors/kustomization.file
+# 
+# By default, Iter8 will install manifests corresponding to all the stacks.
+#
+# To change selectively turn off stacks, comment out the corresponding resources
+# in these three files.
+###########
+
+commonLabels:
+  creator: iter8
+
+resources:
+- namespace.yaml
+- metrics
+
+# By default, the URLTempalate for Iter8 metrics that are installed 'out-of-the-box'
+# point to the Prometheus instance installed as part of the prometheus-add-on.
+# 
+# If you chose not to install the Prometheus add-on and choose to use 
+# your own Prometheus instance, or 
+# if you kustomized the Iter8 installation namespace, 
+# you may need to kustomize the URLTemplate for Iter8 metrics during installation. 
+#
+# To supply a different Prometheus URL Iter8 metrics installed 'out-of-the-box', 
+# uncomment the following lines and replace the urlTemplate value with 
+# the URL of your Prometheus service
+
+# patches:
+# - target:
+#     kind: Metric
+#   patch: |-
+#     kind: Metric
+#     metadata:
+#       name: not-important
+#     spec:
+#       urlTemplate: http://my.prometheus.service:8080/v1/query/api
