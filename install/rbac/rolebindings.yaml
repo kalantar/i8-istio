@@ -11,8 +11,10 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: controller
+  namespace: iter8-system
 - kind: ServiceAccount
   name: handlers
+  namespace: iter8-system
 ---
 # This role binding enables Iter8 controller and handler to manipulate 
 # Istio virtual services in the cluster in any namespace
@@ -27,5 +29,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: controller
+  namespace: iter8-system
 - kind: ServiceAccount
   name: handlers
+  namespace: iter8-system

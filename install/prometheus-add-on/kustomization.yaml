@@ -11,6 +11,8 @@
 # in these three files.
 ###########
 
+namespace: iter8-istio
+
 namePrefix: iter8-
 
 commonLabels:
