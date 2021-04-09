@@ -1,0 +1,168 @@
+apiVersion: iter8.tools/v2alpha2
+kind: Experiment
+metadata:
+  name: istio-abn-exp
+spec:
+  # target identifies the knative service under experimentation using its fully qualified name
+  target: bookinfo-iter8/productpage
+  strategy:
+    # this experiment will perform an A/B/n test
+    testingPattern: A/B/N
+    deploymentPattern: Progressive
+    actions:
+      start: # run the following sequence of tasks at the start of the experiment
+      - task: common/exec
+        with:
+          disableInterpolation: true
+          cmd: /bin/sh
+          args:
+          - -c
+          - |
+            echo "Istio start task called"
+            set -x
+
+            # Read variables from experiment
+
+            # define constants
+            APPLICATION="productpage"
+            DR="bookinfo"
+            VS="bookinfo"
+            NAMESPACE="bookinfo-iter8"
+
+            # echo inputs
+            echo "       APPLICATION = ${APPLICATION}"
+            echo "         NAMESPACE = ${NAMESPACE}"
+            echo "                DR = ${DR}"
+            echo "                VS = ${VS}"
+
+            # patch destination rule
+            # baseline versiin
+            VERSION=v1
+            kubectl patch dr ${DR} -n ${NAMESPACE} --type "json" -p "[{\"op\": \"add\", \"path\":\"/spec/subsets\", \"value\":[{\"labels\":{\"app\": \"${APPLICATION}\", \"version\":\"${VERSION}\"}, \"name\":\"${APPLICATION}-${VERSION}\"}] }]"
+            # candidate versions
+            for VERSION in v2 v3; do
+              kubectl patch dr ${DR} -n ${NAMESPACE} --type "json" -p "[{\"op\": \"add\", \"path\":\"/spec/subsets/-\", \"value\":{\"labels\":{\"app\": \"${APPLICATION}\", \"version\":\"${VERSION}\"}, \"name\":\"${APPLICATION}-${VERSION}\"} }]"
+            done
+
+            # patch virtualservice
+            # baseline version
+            VERSION=v1
+            kubectl patch vs ${VS} -n ${NAMESPACE} --type "json" -p "[{\"op\":\"add\", \"path\":\"/spec/http/0/route\", \"value\": [{\"destination\": { \"host\": \"${APPLICATION}\", \"port\": { \"number\": 9080 }, \"subset\": \"${APPLICATION}-${VERSION}\" }, \"weight\": 100}] }]"
+            # candiate versions
+            for VERSION in v2 v3; do
+              kubectl patch vs bookinfo -n ${NAMESPACE} --type "json" -p "[{\"op\":\"add\", \"path\":\"/spec/http/0/route/-\", \"value\": {\"destination\": { \"host\": \"${APPLICATION}\", \"port\": { \"number\": 9080 }, \"subset\": \"${APPLICATION}-${VERSION}\" }, \"weight\": 0} }]"
+            done
+
+            # log debug information
+            kubectl -n ${NAMESPACE} get dr ${DR} -o json | jq .spec.subsets
+            kubectl -n ${NAMESPACE} get vs ${VS} -o json | jq .spec.http[0].route
+
+            set +x
+            echo "Istio start task complete"
+
+
+      finish: # run the following sequence of tasks at the end of the experiment
+      - task: common/exec
+        with:
+          cmd: /bin/bash
+          args: 
+          - "-c"
+          - |
+            echo "Istio finish task called"
+            set -x
+
+            # Read variables from versionInfo
+            APPLICATION={{ .app }}
+            VERSION_TO_PROMOTE={{ .version }}
+            NAMESPACE={{ .namespace }}
+
+            # Define constants
+            DR="bookinfo"
+            VS="bookinfo"
+
+            # echo inputs
+            echo "       APPLICATION = ${APPLICATION}"
+            echo "VERSION_TO_PROMOTE = ${VERSION_TO_PROMOTE}"
+            echo "         NAMESPACE = ${NAMESPACE}"
+            echo "                DR = ${DR}"
+            echo "                VS = ${VS}"
+
+            # patch destinationrule
+            kubectl patch dr ${DR} -n ${NAMESPACE} --type "json" -p "[{\"op\": \"add\", \"path\":\"/spec/subsets\", \"value\":[{\"labels\":{\"app\": \"${APPLICATION}\", \"version\":\"${VERSION_TO_PROMOTE}\"}, \"name\":\"${APPLICATION}-${VERSION_TO_PROMOTE}\"}] }]"
+
+            # patch virtualservice
+            kubectl patch vs ${VS} -n ${NAMESPACE} --type "json" -p "[{\"op\":\"add\", \"path\":\"/spec/http/0/route\", \"value\": [{\"destination\": { \"host\": \"${APPLICATION}\", \"port\": { \"number\": 9080 }, \"subset\": \"${APPLICATION}-${VERSION_TO_PROMOTE}\" }, \"weight\": 100}] }]"
+
+            # log debug information
+            kubectl -n ${NAMESPACE} get dr ${DR} -o json | jq .spec.subsets
+            kubectl -n ${NAMESPACE} get vs ${VS} -o json | jq .spec.http[0].route
+
+            set +x
+            echo "Istio final task completed"
+
+  criteria:
+    indicators:
+    - le500ms-latency-percentile
+    objectives: 
+    - metric: iter8-istio/mean-latency
+      upperLimit: 100
+    - metric: iter8-istio/error-rate
+      upperLimit: "0.01"
+    rewards:
+    - metric: books-purchased
+      preferredDirection: High
+  duration:
+    intervalSeconds: 10
+    iterationsPerLoop: 8
+  versionInfo:
+    # information about app versions used in this experiment
+    baseline:
+      name: baseline
+      variables:
+      - name: app
+        value: productpage
+      - name: version
+        value: v1
+      - name: revision
+        value: productpage-v1
+      - name: namespace
+        value: bookinfo-iter8
+      weightObjRef:
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        namespace: bookinfo-iter8
+        name: bookinfo
+        fieldPath: .spec.http[0].route[0].weight
+    candidates:
+    - name: candidate-1
+      variables:
+      - name: app
+        value: productpage
+      - name: version
+        value: v2
+      - name: revision
+        value: productpage-v2
+      - name: namespace
+        value: bookinfo-iter8
+      weightObjRef:
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        namespace: bookinfo-iter8
+        name: bookinfo
+        fieldPath: .spec.http[0].route[1].weight
+    - name: candidate-2
+      variables:
+      - name: app
+        value: productpage
+      - name: version
+        value: v3
+      - name: revision
+        value: productpage-v3
+      - name: namespace
+        value: bookinfo-iter8
+      weightObjRef:
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        namespace: bookinfo-iter8
+        name: bookinfo
+        fieldPath: .spec.http[0].route[2].weight

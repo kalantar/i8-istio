@@ -11,6 +11,8 @@ spec:
   jobLabel: kubernetes-pods
   
   endpoints:
+  - path: /metrics
+    targetPort: 9080
   - path: /stats/prometheus
     targetPort: http-envoy-prom
     interval: 15s
