@@ -5,10 +5,10 @@ set -x
 # Create namespace
 kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/master/docs/yamls/namespace.yaml
 
-# Install bookinfo-app (reviewsc-v2)
+# Install bookinfo-app
 kubectl -n bookinfo-iter8 apply \
-  -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/master/docs/yamls/bookinfo-tutorial.yaml \
-  -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/master/docs/yamls/bookinfo-gateway.yaml
+  -f $ITER8_ISTIO/samples/bookinfo-tutorial.yaml \
+  -f $ITER8_ISTIO/samples/abn/bookinfo-gateway.yaml
 
 # Create productpage-v2, productpage-v3
 kubectl -n bookinfo-iter8 apply -f https://raw.githubusercontent.com/iter8-tools/iter8-istio/master/docs/yamls/productpage-v2.yaml
