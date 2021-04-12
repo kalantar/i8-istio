@@ -41,16 +41,16 @@
     kubectl -n iter8-system delete po $(kubectl -n iter8-system get po --selector=control-plane=controller-manager -o jsonpath='{.items[0].metadata.name}')
     kubectl wait --for condition=ready --timeout=300s pods --all -n iter8-system
 
-## Samples
+## Sample Experiments
 
-### Canary over Deployments
+### Canary Experiment over Deployments
 
 [Canary experiment](https://github.com/kalantar/i8-istio/blob/main/samples/canary/tutorial.md) for the reviews microservice of the bookinfo application.
 
-### A/B/n
+### A/B/n Experiment
 
 [A/B/n experiment](https://github.com/kalantar/i8-istio/blob/main/samples/abn/tutorial.md) for the productpage microservice of the bookinfo application.
 
-### Canary over Services
+### Canary Experiment over Services
 
 [Canary experiment](https://github.com/kalantar/i8-istio/blob/main/samples/services-canary/tutorial.md) for the productpage microservice of the bookinfo application.
