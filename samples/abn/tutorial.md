@@ -1,6 +1,6 @@
 # Sample: A/B/N Test on Edge Service
 
-Assumes Iter8 has been set up. If not see:  (../README.md)
+Assumes Iter8 has been set up. If not see [Iter8 setup for the Istio domain](https://github.com/kalantar/i8-istio).
 
 ## 1. Define new metrics
 

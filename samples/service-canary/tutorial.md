@@ -1,6 +1,6 @@
 # Sample: Canary Test
 
-Assumes Iter8 has been set up. If not see:  (../README.md)
+Assumes Iter8 has been set up. If not see [Iter8 setup for the Istio domain](https://github.com/kalantar/i8-istio).
 
 ## 1. Set up basic `bookinfo` application
 
