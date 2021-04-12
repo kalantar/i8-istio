@@ -53,4 +53,4 @@
 
 ### Canary Experiment over Services
 
-[Canary experiment](https://github.com/kalantar/i8-istio/blob/main/samples/services-canary/tutorial.md) for the productpage microservice of the bookinfo application.
+[Canary experiment](https://github.com/kalantar/i8-istio/blob/main/samples/service-canary/tutorial.md) for the productpage microservice of the bookinfo application.
